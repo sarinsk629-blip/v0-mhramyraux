@@ -15,11 +15,67 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: "MHARMYRAUX | Where Souls Collide",
+  title: "Mharmyraux - Where Souls Collide",
   description:
-    "The end of the void. A global social ecosystem for real-time Human-to-Human connection. No AI. No bots. No algorithms. Just souls.",
-  keywords: ["social", "human connection", "real-time", "global", "community"],
-    generator: 'v0.app'
+    "The end of the void. A revolutionary global social ecosystem for real-time Human-to-Human connection. No AI chatbots. No bots. No algorithms. Just real souls colliding across the digital cosmos. Join millions finding authentic human connection.",
+  keywords: [
+    "social network",
+    "human connection",
+    "real-time chat",
+    "global community",
+    "no bots",
+    "authentic connections",
+    "soul matching",
+    "human only",
+    "anti-algorithm",
+    "real people",
+  ],
+  authors: [{ name: "Mharmyraux" }],
+  creator: "Mharmyraux",
+  publisher: "Mharmyraux",
+  verification: {
+    google: "ettceV2fs9TnQV7bqXvT03Q1FFH9pNu2BxqjUDwKDMc",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://mharmyraux.com",
+    siteName: "Mharmyraux",
+    title: "Mharmyraux - Where Souls Collide",
+    description:
+      "The end of the void. Join the revolution of real human connection. No AI. No bots. No algorithms. Just souls colliding across the cosmos.",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Mharmyraux - Where Souls Collide",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Mharmyraux - Where Souls Collide",
+    description: "The end of the void. Real human connection without AI, bots, or algorithms.",
+    images: ["/og-image.jpg"],
+    creator: "@mharmyraux",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  metadataBase: new URL("https://mharmyraux.com"),
+  alternates: {
+    canonical: "/",
+  },
+  generator: "v0.app",
 }
 
 export const viewport: Viewport = {
