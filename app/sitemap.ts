@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next"
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://mhramyraux-psi.vercel.app/"
+  const baseUrl = "https://mharmyraux.com"
   const currentDate = new Date()
 
   return [
@@ -12,19 +12,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
-      url: baseUrl,
+      url: `${baseUrl}/void`,
       lastModified: currentDate,
       changeFrequency: "daily",
       priority: 0.9,
     },
     {
-      url: baseUrl,
+      url: `${baseUrl}/pulse`,
       lastModified: currentDate,
       changeFrequency: "daily",
       priority: 0.9,
     },
     {
-      url: baseUrl,
+      url: `${baseUrl}/zenith`,
       lastModified: currentDate,
       changeFrequency: "daily",
       priority: 0.9,
