@@ -5,8 +5,6 @@ import { createPayPalOrder } from '@/lib/payments/paypal';
 import { PAYMENT_CONFIG } from '@/lib/payments/constants';
 import type { CreateOrderRequest, CreateOrderResponse } from '@/types/payments';
 
-export const runtime = 'edge';
-
 export async function POST(request: NextRequest) {
   try {
     const body: CreateOrderRequest = await request.json();
