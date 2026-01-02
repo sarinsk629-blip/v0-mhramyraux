@@ -4,8 +4,6 @@ import { verifyRazorpayWebhook } from '@/lib/payments/razorpay';
 import { holdFundsInEscrow } from '@/lib/payments/escrow';
 import type { RazorpayWebhookEvent, WebhookHandlerResponse } from '@/types/payments';
 
-export const runtime = 'edge';
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.text();
