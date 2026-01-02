@@ -5,7 +5,7 @@ import { createPayPalPayout } from '@/lib/payments/paypal';
 import { PAYMENT_CONFIG } from '@/lib/payments/constants';
 import type { PayoutRequest, PayoutResponse } from '@/types/payments';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {

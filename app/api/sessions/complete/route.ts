@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { calculateSplitWithPenalty } from '@/lib/payments/escrow';
 import type { SessionSettlement } from '@/types/payments';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
