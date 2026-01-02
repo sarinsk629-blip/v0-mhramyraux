@@ -1,0 +1,244 @@
+// Prisma Schema for Mhramyraux Social Marketplace
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Model
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  phone             String?   @unique
+  displayName       String?
+  avatarUrl         String?
+  role              UserRole  @default(SEEKER)
+  trialStartedAt    DateTime? // For 24-hour countdown FOMO
+  trialExpiresAt    DateTime? // Calculated: trialStartedAt + 24 hours
+  isPremium         Boolean   @default(false)
+  premiumExpiresAt  DateTime?
+  isBlocked         Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  wallet            Wallet?
+  sessionsAsSeeker  LiveSession[] @relation("SeekerSessions")
+  sessionsAsPartner LiveSession[] @relation("PartnerSessions")
+  transactions      Transaction[]
+  ratings           Rating[]
+}
+
+enum UserRole {
+  SEEKER    // Boys/Customers
+  PARTNER   // Girls/Hosts
+  ADMIN
+}
+
+// Wallet Model (For Partners)
+model Wallet {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  user                User     @relation(fields: [userId], references: [id])
+  pendingEarnings     Decimal  @default(0) @db.Decimal(10, 2)
+  withdrawalBalance   Decimal  @default(0) @db.Decimal(10, 2)
+  totalEarnings       Decimal  @default(0) @db.Decimal(10, 2)
+  totalWithdrawn      Decimal  @default(0) @db.Decimal(10, 2)
+  
+  // Payment Gateway Accounts
+  razorpayAccountId   String?  // Razorpay Route linked account
+  razorpayAccountStatus String? @default("pending")
+  paypalEmail         String?  // PayPal payout email
+  paypalVerified      Boolean  @default(false)
+  
+  preferredPayout     PayoutMethod @default(RAZORPAY)
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  payouts             Payout[]
+}
+
+enum PayoutMethod {
+  RAZORPAY
+  PAYPAL
+  BANK_TRANSFER
+}
+
+// LiveSession Model
+model LiveSession {
+  id                String        @id @default(cuid())
+  
+  seekerId          String
+  seeker            User          @relation("SeekerSessions", fields: [seekerId], references: [id])
+  
+  partnerId         String
+  partner           User          @relation("PartnerSessions", fields: [partnerId], references: [id])
+  
+  sessionType       SessionType   @default(LOVE_CHAT)
+  duration          Int           @default(0) // in seconds
+  maxDuration       Int           @default(600) // 10 minutes = 600 seconds
+  
+  // Satisfaction & Quality
+  satisfactionScore Int?          // 0-100%
+  partnerRating     Int?          // 1-5 stars from seeker
+  seekerRating      Int?          // 1-5 stars from partner
+  
+  // Payment Details
+  creditsPurchased  Int           @default(1) // Number of "Love Chat Credits"
+  amountPaid        Decimal       @db.Decimal(10, 2) // e.g., ₹50 or $5
+  currency          String        @default("INR")
+  paymentGateway    PaymentGateway
+  
+  // Revenue Split (50/50 base, adjusted by satisfaction)
+  platformShare     Decimal       @db.Decimal(10, 2)
+  partnerShare      Decimal       @db.Decimal(10, 2)
+  penaltyApplied    Decimal       @default(0) @db.Decimal(10, 2)
+  
+  // Status Tracking
+  status            SessionStatus @default(PENDING_PAYMENT)
+  paymentStatus     PaymentStatus @default(PENDING)
+  settlementStatus  SettlementStatus @default(PENDING)
+  
+  // Timestamps
+  scheduledAt       DateTime?
+  startedAt         DateTime?
+  endedAt           DateTime?
+  settledAt         DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  
+  // External References
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+  paypalOrderId     String?
+  paypalCaptureId   String?
+  
+  transaction       Transaction?
+}
+
+enum SessionType {
+  LOVE_CHAT
+  VOICE_CALL
+  VIDEO_CALL
+  PREMIUM_EXPERIENCE
+}
+
+enum SessionStatus {
+  PENDING_PAYMENT
+  PAYMENT_RECEIVED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  DISPUTED
+}
+
+enum PaymentStatus {
+  PENDING
+  CAPTURED
+  HELD_IN_ESCROW
+  RELEASED
+  REFUNDED
+  FAILED
+}
+
+enum SettlementStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum PaymentGateway {
+  RAZORPAY
+  PAYPAL
+}
+
+// Transaction Model (Audit Trail)
+model Transaction {
+  id                String          @id @default(cuid())
+  
+  userId            String
+  user              User            @relation(fields: [userId], references: [id])
+  
+  sessionId         String?         @unique
+  session           LiveSession?    @relation(fields: [sessionId], references: [id])
+  
+  type              TransactionType
+  amount            Decimal         @db.Decimal(10, 2)
+  currency          String          @default("INR")
+  
+  // Masked description for bank statements
+  description       String          @default("Global Social Credits")
+  internalNote      String?
+  
+  gateway           PaymentGateway
+  gatewayRefId      String?         // razorpay_payment_id or paypal_capture_id
+  
+  status            TransactionStatus @default(PENDING)
+  
+  metadata          Json?           // Store additional gateway response
+  
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+}
+
+enum TransactionType {
+  CREDIT_PURCHASE
+  SESSION_EARNING
+  PLATFORM_FEE
+  PENALTY_DEDUCTION
+  PAYOUT
+  REFUND
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REVERSED
+}
+
+// Payout Model
+model Payout {
+  id                String        @id @default(cuid())
+  
+  walletId          String
+  wallet            Wallet        @relation(fields: [walletId], references: [id])
+  
+  amount            Decimal       @db.Decimal(10, 2)
+  currency          String        @default("INR")
+  
+  method            PayoutMethod
+  
+  // Gateway References
+  razorpayPayoutId  String?
+  paypalPayoutId    String?
+  
+  status            PayoutStatus  @default(PENDING)
+  processedAt       DateTime?
+  failureReason     String?
+  
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+}
+
+enum PayoutStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REVERSED
+}
+
+// Rating Model
+model Rating {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id])
+  rating            Int      // 1-5 stars
+  comment           String?
+  createdAt         DateTime @default(now())
+}
