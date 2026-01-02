@@ -1,4 +1,4 @@
 {
   "installCommand": "npm install --legacy-peer-deps",
-  "buildCommand": "npx prisma generate && npm run build"
+  "buildCommand": "npx prisma generate --schema=./prisma/schema.prisma && npm run build"
 }
