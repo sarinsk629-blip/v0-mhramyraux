@@ -7,7 +7,10 @@
     "dev": "next dev",
     "lint": "eslint .",
     "start": "next start",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate --schema=./prisma/schema.prisma"
+  },
+  "prisma": {
+    "schema": "./prisma/schema.prisma"
   },
   "dependencies": {
     "@paypal/checkout-server-sdk": "^1.0.3",
