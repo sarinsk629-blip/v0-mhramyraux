@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     // Determine amount based on currency
     const isINR = currency === 'INR' || !currency;
     const amount = isINR ? PAYMENT_CONFIG.CREDIT_PRICE_INR : PAYMENT_CONFIG.CREDIT_PRICE_USD;
-    const finalCurrency = isINR ? 'INR' : 'USD';
+    const finalCurrency = currency || (isINR ? 'INR' : 'USD');
 
     // Calculate initial split (50/50)
     const platformShare = amount * (PAYMENT_CONFIG.PLATFORM_SHARE_PERCENT / 100);

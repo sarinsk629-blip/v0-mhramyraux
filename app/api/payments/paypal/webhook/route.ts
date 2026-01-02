@@ -32,9 +32,10 @@ export async function POST(request: NextRequest) {
     if (event.event_type === 'PAYMENT.CAPTURE.COMPLETED') {
       const captureId = event.resource.id;
       
-      // Extract order ID from resource
-      // Note: In a real implementation, you'd extract this from the event resource
-      const orderId = event.resource.id;
+      // Extract order ID from resource supplementary data
+      // Note: PayPal webhook structure varies - adjust based on actual event structure
+      // In real implementation, extract from event.resource.supplementary_data.related_ids.order_id
+      const orderId = (event.resource as any).supplementary_data?.related_ids?.order_id || captureId;
 
       // Find session by order ID
       const session = await prisma.liveSession.findFirst({

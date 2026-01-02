@@ -71,10 +71,22 @@ export function verifyPayPalWebhook(
     const transmissionSig = headers['paypal-transmission-sig'];
     const authAlgo = headers['paypal-auth-algo'];
 
-    // Note: Full PayPal webhook verification would require
-    // fetching the certificate and verifying the signature
-    // This is a simplified version
-    return true; // Placeholder
+    // IMPORTANT: In production, implement full PayPal webhook verification:
+    // 1. Fetch the certificate from certUrl
+    // 2. Verify the certificate chain
+    // 3. Construct the expected message: transmissionId|transmissionTime|webhookId|crc32(payload)
+    // 4. Verify the signature using the certificate
+    // See: https://developer.paypal.com/docs/api-basics/notifications/webhooks/notification-messages/#verify-the-webhook-signature
+    
+    // For development, check basic headers presence
+    if (!transmissionId || !transmissionTime || !transmissionSig || !webhookId) {
+      console.error('Missing required PayPal webhook headers');
+      return false;
+    }
+    
+    // TODO: Implement full signature verification before production deployment
+    console.warn('PayPal webhook verification is not fully implemented. Do not use in production without proper verification.');
+    return true; // Placeholder - implement full verification
   } catch (error) {
     console.error('Error verifying PayPal webhook:', error);
     return false;
@@ -89,8 +101,13 @@ export async function createPayPalPayout(
   note: string
 ) {
   try {
-    // Note: PayPal Payouts API integration would go here
-    // This is a placeholder for the actual implementation
+    // IMPORTANT: Implement actual PayPal Payouts API before production
+    // See: https://developer.paypal.com/docs/api/payments.payouts-batch/v1/
+    // Steps:
+    // 1. Create payout batch: POST /v1/payments/payouts
+    // 2. Include sender_batch_header and items array
+    // 3. Poll for payout status
+    console.warn('PayPal payout creation is a placeholder. Implement before production.');
     return {
       batch_id: 'batch_' + Date.now(),
       amount,

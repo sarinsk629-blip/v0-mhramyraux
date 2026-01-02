@@ -25,8 +25,14 @@ export function middleware(request: NextRequest) {
   }
 
   // Get user data from headers or cookies
-  // Note: In a real implementation, you would get this from your auth system
-  // For now, this is a placeholder structure
+  // IMPORTANT: This is a placeholder for demonstration purposes.
+  // In production, implement proper authentication:
+  // 1. Use Supabase Auth or NextAuth.js for session management
+  // 2. Verify JWT tokens on the server side
+  // 3. Never trust client-provided headers for user authentication
+  // Example with Supabase:
+  //   const supabase = createServerClient(request);
+  //   const { data: { user } } = await supabase.auth.getUser();
   const userDataHeader = request.headers.get('x-user-data');
   
   if (!userDataHeader) {

@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check minimum withdrawal amount
-    const finalCurrency = currency || wallet.user.role === 'PARTNER' ? 'INR' : 'USD';
+    const finalCurrency = currency || (wallet.user.role === 'PARTNER' ? 'INR' : 'USD');
     const minAmount =
       finalCurrency === 'INR'
         ? PAYMENT_CONFIG.MIN_WITHDRAWAL_INR

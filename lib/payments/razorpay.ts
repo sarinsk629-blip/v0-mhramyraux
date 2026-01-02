@@ -47,8 +47,13 @@ export function verifyRazorpayWebhook(payload: string, signature: string): boole
 // Create linked account (for partners)
 export async function createLinkedAccount(email: string, name: string, phone: string) {
   try {
-    // Note: Razorpay Route API integration would go here
-    // This is a placeholder for the actual implementation
+    // IMPORTANT: Implement actual Razorpay Route API integration before production
+    // See: https://razorpay.com/docs/api/route/
+    // Steps:
+    // 1. Create linked account: POST /v1/accounts
+    // 2. Upload KYC documents
+    // 3. Activate account after verification
+    console.warn('Razorpay linked account creation is a placeholder. Implement before production.');
     return {
       id: 'acc_' + Date.now(),
       status: 'created',
@@ -67,8 +72,10 @@ export async function executeRouteTransfer(
   transferId: string
 ) {
   try {
-    // Note: Razorpay Route API integration would go here
-    // This is a placeholder for the actual implementation
+    // IMPORTANT: Implement actual Razorpay Route transfer before production
+    // See: https://razorpay.com/docs/api/route/transfers/
+    // Use: POST /v1/transfers with account_id and amount
+    console.warn('Razorpay route transfer is a placeholder. Implement before production.');
     return {
       id: transferId,
       amount,
@@ -89,8 +96,10 @@ export async function createRazorpayPayout(
   mode: string = 'IMPS'
 ) {
   try {
-    // Note: Razorpay Payout API integration would go here
-    // This is a placeholder for the actual implementation
+    // IMPORTANT: Implement actual Razorpay Payout API before production
+    // See: https://razorpay.com/docs/api/payouts/
+    // Use: POST /v1/payouts with account_number, amount, currency, mode
+    console.warn('Razorpay payout creation is a placeholder. Implement before production.');
     return {
       id: 'pout_' + Date.now(),
       amount,
