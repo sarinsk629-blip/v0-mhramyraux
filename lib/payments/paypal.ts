@@ -1,26 +1,31 @@
 import paypal from '@paypal/checkout-server-sdk';
 import crypto from 'crypto';
 
-// Initialize PayPal client
-function getPayPalClient() {
-  const environment =
-    process.env.PAYPAL_MODE === 'live'
-      ? new paypal.core.LiveEnvironment(
-          process.env.PAYPAL_CLIENT_ID!,
-          process.env.PAYPAL_CLIENT_SECRET!
-        )
-      : new paypal.core.SandboxEnvironment(
-          process.env.PAYPAL_CLIENT_ID!,
-          process.env.PAYPAL_CLIENT_SECRET!
-        );
-  return new paypal.core.PayPalHttpClient(environment);
-}
+// Lazy initialization
+let paypalClientInstance: paypal.core.PayPalHttpClient | null = null;
 
-export const paypalClient = getPayPalClient();
+function getPayPalClient(): paypal.core.PayPalHttpClient {
+  if (!paypalClientInstance) {
+    const clientId = process.env.PAYPAL_CLIENT_ID;
+    const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
+    
+    if (!clientId || !clientSecret) {
+      throw new Error('PayPal credentials not configured. Set PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET environment variables.');
+    }
+    
+    const environment = process.env.PAYPAL_MODE === 'live'
+      ? new paypal.core.LiveEnvironment(clientId, clientSecret)
+      : new paypal.core.SandboxEnvironment(clientId, clientSecret);
+    
+    paypalClientInstance = new paypal.core.PayPalHttpClient(environment);
+  }
+  return paypalClientInstance;
+}
 
 // Create order function
 export async function createPayPalOrder(amount: number, currency: string) {
   try {
+    const client = getPayPalClient();
     const request = new paypal.orders.OrdersCreateRequest();
     request.prefer('return=representation');
     request.requestBody({
@@ -36,7 +41,7 @@ export async function createPayPalOrder(amount: number, currency: string) {
       ],
     });
 
-    const order = await paypalClient.execute(request);
+    const order = await client.execute(request);
     return order.result;
   } catch (error) {
     console.error('Error creating PayPal order:', error);
@@ -47,10 +52,11 @@ export async function createPayPalOrder(amount: number, currency: string) {
 // Capture payment
 export async function capturePayPalPayment(orderId: string) {
   try {
+    const client = getPayPalClient();
     const request = new paypal.orders.OrdersCaptureRequest(orderId);
     request.requestBody({});
     
-    const capture = await paypalClient.execute(request);
+    const capture = await client.execute(request);
     return capture.result;
   } catch (error) {
     console.error('Error capturing PayPal payment:', error);
@@ -64,7 +70,12 @@ export function verifyPayPalWebhook(
   headers: Record<string, string>
 ): boolean {
   try {
-    const webhookId = process.env.PAYPAL_WEBHOOK_ID!;
+    const webhookId = process.env.PAYPAL_WEBHOOK_ID;
+    if (!webhookId) {
+      console.error('PAYPAL_WEBHOOK_ID not configured');
+      return false;
+    }
+    
     const transmissionId = headers['paypal-transmission-id'];
     const transmissionTime = headers['paypal-transmission-time'];
     const certUrl = headers['paypal-cert-url'];
@@ -79,7 +90,7 @@ export function verifyPayPalWebhook(
     // See: https://developer.paypal.com/docs/api-basics/notifications/webhooks/notification-messages/#verify-the-webhook-signature
     
     // For development, check basic headers presence
-    if (!transmissionId || !transmissionTime || !transmissionSig || !webhookId) {
+    if (!transmissionId || !transmissionTime || !transmissionSig) {
       console.error('Missing required PayPal webhook headers');
       return false;
     }

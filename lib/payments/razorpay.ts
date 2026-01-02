@@ -1,15 +1,30 @@
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 
-// Initialize Razorpay client
-export const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
+// Lazy initialization - only create client when needed
+let razorpayClient: Razorpay | null = null;
+
+function getRazorpayClient(): Razorpay {
+  if (!razorpayClient) {
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    
+    if (!keyId || !keySecret) {
+      throw new Error('Razorpay credentials not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET environment variables.');
+    }
+    
+    razorpayClient = new Razorpay({
+      key_id: keyId,
+      key_secret: keySecret,
+    });
+  }
+  return razorpayClient;
+}
 
 // Create order function
 export async function createRazorpayOrder(amount: number, currency: string, receipt: string) {
   try {
+    const razorpay = getRazorpayClient();
     const order = await razorpay.orders.create({
       amount: amount * 100, // Razorpay expects amount in smallest currency unit (paise)
       currency,
@@ -28,7 +43,12 @@ export async function createRazorpayOrder(amount: number, currency: string, rece
 // Verify webhook signature
 export function verifyRazorpayWebhook(payload: string, signature: string): boolean {
   try {
-    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET!;
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    if (!webhookSecret) {
+      console.error('RAZORPAY_WEBHOOK_SECRET not configured');
+      return false;
+    }
+    
     const expectedSignature = crypto
       .createHmac('sha256', webhookSecret)
       .update(payload)

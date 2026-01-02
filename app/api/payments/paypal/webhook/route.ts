@@ -4,7 +4,7 @@ import { verifyPayPalWebhook } from '@/lib/payments/paypal';
 import { holdFundsInEscrow } from '@/lib/payments/escrow';
 import type { PayPalWebhookEvent, WebhookHandlerResponse } from '@/types/payments';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
