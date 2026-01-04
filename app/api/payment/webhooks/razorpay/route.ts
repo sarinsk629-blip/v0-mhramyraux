@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { prisma } from '../../../../src/lib/prisma'
-export const runtime = 'edge'
 
 export async function POST(req: NextRequest) {
   const bodyText = await req.text()
@@ -13,14 +12,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
-  // parse payload and update Payment/escrow
   const payload = JSON.parse(bodyText)
-  // Example: payload contains razorpay_order_id and event type
   const providerOrderId = payload?.payload?.payment?.entity?.order_id ?? payload?.payload?.order?.entity?.id
 
   if (!providerOrderId) return NextResponse.json({ ok: true })
 
-  // Create payment record (idempotent behavior recommended)
   try {
     await prisma.payment.create({
       data: {
