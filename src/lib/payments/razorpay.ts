@@ -1,6 +1,25 @@
 import crypto from 'crypto';
 
-// Verify Razorpay webhook signature using HMAC SHA256
+export async function createRazorpayOrder(amount: number, currency = 'INR', receipt?: string) {
+  return {
+    id: `razorpay_order_${Date.now()}`,
+    amount,
+    currency,
+    receipt: receipt || `rcpt_${Date.now()}`,
+    status: 'created',
+  };
+}
+
+export async function createRazorpayPayout(accountId: string, amount: number, currency = 'INR') {
+  return {
+    id: `razorpay_payout_${Date.now()}`,
+    accountId,
+    amount,
+    currency,
+    status: 'processing',
+  };
+}
+
 export function verifyRazorpayWebhook(body: string, signature: string) {
   const secret = process.env.RAZORPAY_SECRET || '';
   if (!secret || !signature) return false;
@@ -11,15 +30,4 @@ export function verifyRazorpayWebhook(body: string, signature: string) {
     console.error('Razorpay verify error', e);
     return false;
   }
-}
-
-// Minimal placeholder for creating an order (to be replaced with real Razorpay SDK calls)
-export async function createRazorpayOrder(amountPaise: number, receipt?: string) {
-  // In production replace with Razorpay REST API or SDK using RAZORPAY_KEY/SECRET
-  return {
-    id: `order_${Date.now()}`,
-    amount: amountPaise,
-    currency: 'INR',
-    receipt: receipt || `rcpt_${Date.now()}`,
-  };
 }

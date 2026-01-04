@@ -5,12 +5,34 @@ export type WebhookHandlerResponse = {
   sessionId?: string;
 };
 
-export interface RazorpayWebhookEvent {
-  event: string;
-  payload?: any;
-}
+export type CreateOrderRequest = {
+  gateway: 'razorpay' | 'paypal';
+  sessionType: string;
+  partnerId: string;
+  seekerId: string;
+  currency?: string;
+};
 
-export interface PayPalWebhookEvent {
-  event_type: string;
-  resource?: any;
-}
+export type CreateOrderResponse = {
+  success: boolean;
+  orderId?: string;
+  amount?: number;
+  currency?: string;
+  gateway?: string;
+  sessionId?: string;
+  error?: string;
+};
+
+export type PayoutRequest = {
+  amount: number;
+  method: 'RAZORPAY' | 'PAYPAL';
+  currency?: string;
+};
+
+export type PayoutResponse = {
+  success: boolean;
+  payoutId?: string;
+  amount?: number;
+  status?: string;
+  error?: string;
+};
