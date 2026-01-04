@@ -1,47 +1,24 @@
-import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
-import prisma from "@/lib/prisma";
+import { NextRequest, NextResponse } from 'next/server'
+export const runtime = 'edge'
 
-export const runtime = "edge";
-
-const RAZORPAY_SECRET = process.env.RAZORPAY_SECRET || "";
+// NOTE: This route contains placeholders for Razorpay integration logic.
+// It expects RAZORPAY_KEY_ID and RAZORPAY_SECRET in env.
 
 export async function POST(req: NextRequest) {
-  // This handler supports webhook verification and storing payment events.
-  const signature = req.headers.get("x-razorpay-signature") || "";
-  const bodyText = await req.text();
-
-  if (signature) {
-    const expected = crypto.createHmac("sha256", RAZORPAY_SECRET).update(bodyText).digest("hex");
-    if (expected !== signature) {
-      return new NextResponse(JSON.stringify({ error: "Invalid signature" }), { status: 400 });
-    }
-
-    let payload: any = {};
-    try {
-      payload = JSON.parse(bodyText);
-    } catch (e) {
-      // continue with empty payload
-    }
-
-    // Store payment event and mark PENDING. Actual release happens after satisfaction vote.
-    try {
-      const amountPaise = Number(payload?.payload?.payment?.entity?.amount || 0);
-      await prisma.payment.create({
-        data: {
-          amount: amountPaise / 100, // store in currency units (as Decimal)
-          provider: "razorpay",
-          externalId: payload?.payload?.payment?.entity?.id,
-          webhookPayload: payload,
-          status: "PENDING",
-        },
-      });
-    } catch (err) {
-      // In Edge runtime we avoid throwing; log in production
-    }
-
-    return NextResponse.json({ ok: true });
+  const body = await req.json()
+  const { amountInPaise, userId, sessionId } = body
+  if (!amountInPaise || !userId || !sessionId) {
+    return NextResponse.json({ error: 'Missing parameters' }, { status: 400 })
   }
 
-  return new NextResponse(JSON.stringify({ error: "Unsupported operation" }), { status: 400 });
+  // In production, call Razorpay Orders API to create an order and return order id and necessary params for client-side checkout.
+  // Placeholder response:
+  const fakeOrder = {
+    id: `order_${Date.now()}`,
+    amount: amountInPaise,
+    currency: 'INR',
+    status: 'created',
+  }
+
+  return NextResponse.json({ order: fakeOrder })
 }

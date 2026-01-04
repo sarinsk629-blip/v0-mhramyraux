@@ -1,57 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  RELEASED
+  PENALIZED
+}
+
+enum EscrowStatus {
+  PENDING
+  RELEASED
+  PENALIZED
 }
 
 model User {
-  id          String        @id @default(cuid())
-  email       String        @unique
-  trialEndsAt DateTime?     // 24h trial timestamp
-  createdAt   DateTime      @default(now())
-  wallets     Wallet[]
-  liveSessions LiveSession[]
-}
-
-model LiveSession {
-  userId     String
-  sessionId  String
-  duration   Int?           // duration in seconds
-  satisfaction Int?         // 0-100 percent
-  createdAt  DateTime       @default(now())
-
-  user User @relation(fields: [userId], references: [id])
-
-  @@id([userId, sessionId])
-}
-
-model Wallet {
   id           String    @id @default(cuid())
-  ownerId      String
-  owner        User      @relation(fields: [ownerId], references: [id])
-  balance      Decimal   @default("0")
-  adminBalance Decimal   @default("0")
+  email        String    @unique
+  name         String?
+  trialEndsAt  DateTime? // 24h trial timestamp
+  wallet       Wallet?
+  sessions     LiveSession[]
   payments     Payment[]
   createdAt    DateTime  @default(now())
 }
 
-model Payment {
-  id          String        @id @default(cuid())
-  amount      Decimal       // payment amount (in currency units)
-  provider    String?       // 'razorpay' | 'paypal'
-  externalId  String?       // provider order or capture id
-  status      PaymentStatus @default(PENDING)
-  walletId    String?
-  wallet      Wallet?       @relation(fields: [walletId], references: [id])
-  webhookPayload Json?
-  createdAt   DateTime      @default(now())
+model Wallet {
+  id              String  @id @default(cuid())
+  userId          String  @unique
+  balanceInPaise  Int     @default(0) // stored in paise (₹1 = 100)
+  user            User    @relation(fields: [userId], references: [id])
 }
 
-enum PaymentStatus {
-  PENDING
-  RELEASED
-  PENALIZED
+model AdminBalance {
+  id             String @id @default("ADMIN")
+  balanceInPaise Int    @default(0)
+}
+
+model LiveSession {
+  userId      String
+  sessionId   String
+  duration    Int?    // seconds
+  satisfaction Int?   // percent 0-100
+  createdAt   DateTime @default(now())
+
+  @@id([userId, sessionId])
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Payment {
+  id               String        @id @default(cuid())
+  userId           String
+  sessionUserId    String
+  sessionId        String
+  amountInPaise    Int
+  status           PaymentStatus @default(PENDING)
+  escrowStatus     EscrowStatus  @default(PENDING)
+  provider         String
+  providerOrderId  String?
+  createdAt        DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
 }

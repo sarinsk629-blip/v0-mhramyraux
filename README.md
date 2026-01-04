@@ -1,30 +1,20 @@
-# Mharmyraux portal build
+# v0-mhramyraux — Upgraded scaffold
 
-*Automatically synced with your [v0.app](https://v0.app) deployments*
+This commit scaffolds a Next.js (App Router) + TypeScript project with Prisma, payment route stubs for Razorpay and PayPal, webhook handlers, an escrow workflow and a satisfaction-penalty utility.
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/sarinarfin20-6895s-projects/v0-mhramyraux)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/sDxZciRmlfK)
+Key pieces added:
+- Prisma schema (User, Wallet, LiveSession, Payment, AdminBalance)
+- Payment endpoints: /api/payment/razorpay, /api/payment/paypal
+- Webhook placeholders: /api/payment/webhooks/razorpay and /api/payment/webhooks/paypal
+- Vote endpoint to release/penalize escrow: /api/payment/vote
+- computePayout utility implementing the ₹3 per 10% drop penalty
+- tsconfig paths and next.config.js
+- .env.example showing required env vars
 
-## Overview
+Important notes:
+- No real secrets or provider calls are included. Replace placeholders with real calls and secure the endpoints.
+- This commit pushes directly to main as requested. After deploy, run prisma migrations:
+  1. npx prisma generate
+  2. npx prisma migrate dev --name init
 
-This repository will stay in sync with your deployed chats on [v0.app](https://v0.app).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.app](https://v0.app).
-
-## Deployment
-
-Your project is live at:
-
-**[https://vercel.com/sarinarfin20-6895s-projects/v0-mhramyraux](https://vercel.com/sarinarfin20-6895s-projects/v0-mhramyraux)**
-
-## Build your app
-
-Continue building your app on:
-
-**[https://v0.app/chat/sDxZciRmlfK](https://v0.app/chat/sDxZciRmlfK)**
-
-## How It Works
-
-1. Create and modify your project using [v0.app](https://v0.app)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+- Recommended DB: PostgreSQL for production.
